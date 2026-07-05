@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Генератор баг-репортов</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #eef2f7;
+      padding: 30px 20px;
+      color: #111;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .main-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .main-header .badge {
+      background: #4f46e5;
+      color: #fff;
+      padding: 6px 18px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .main-header .badge span {
+      font-size: 18px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 28px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 6px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .tabs button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+      background: transparent;
+      color: #6b7280;
+    }
+
+    .tabs button:hover {
+      background: #f3f4f6;
+    }
+
+    .tabs button.active {
+      background: #4f46e5;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 860px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 28px 30px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .card .subtitle {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .form-group label .required {
+      color: #dc2626;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fafbfc;
+      transition: border 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #4f46e5;
+      background: #fff;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 48px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .example-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .example-buttons button {
+      padding: 4px 16px;
+      border: none;
+      border-radius: 20px;
+      background: #e5e7eb;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      color: #1f2937;
+    }
+
+    .example-buttons button:hover {
+      background: #d1d5db;
+    }
+
+    .file-upload-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .file-upload-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 16px;
+      background: #f3f4f6;
+      border: 2px dashed #d1d5db;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #4b5563;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .file-upload-btn:hover {
+      background: #e5e7eb;
+      border-color: #4f46e5;
+      color: #1f2937;
+    }
+
+    .file-upload-btn .icon {
+      font-size: 18px;
+    }
+
+    .file-upload-btn .hint {
+      font-size: 12px;
+      font-weight: 400;
+      color: #9ca3af;
+      margin-left: 4px;
+    }
+
+    .file-name {
+      display: block;
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    .paste-area {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 2px dashed #d1d5db;
+      border-radius: 10px;
+      background: #fafbfc;
+      font-size: 13px;
+      color: #6b7280;
+      text-align: center;
+      transition: all 0.2s;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .paste-area.highlight {
+      border-color: #4f46e5;
+      background: #eef2ff;
+    }
+
+    .paste-area .paste-icon {
+      font-size: 18px;
+    }
+
+    .paste-area .paste-hint {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .paste-area .paste-status {
+      font-weight: 600;
+      color: #10b981;
+      font-size: 13px;
+    }
+
+    .paste-area .paste-status.error {
+      color: #dc2626;
+    }
+
+    .screenshot-preview {
+      margin-top: 8px;
+      max-width: 160px;
+      max-height: 120px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      display: block;
+    }
+
+    .preview-wrapper {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn-generate {
+      width: 100%;
+      padding: 14px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 6px;
+    }
+
+    .btn-generate:hover {
+      background: #4338ca;
+    }
+
+    .btn-generate:active {
+      transform: scale(0.98);
+    }
+
+    .btn-copy {
+      width: 100%;
+      padding: 14px;
+      background: #10b981;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-copy:hover {
+      background: #059669;
+    }
+
+    .btn-copy:active {
+      transform: scale(0.98);
+    }
+
+    .action-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .action-row .copy-feedback {
+      text-align: center;
+      color: #10b981;
+      font-weight: 600;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .action-row .copy-feedback.show {
+      opacity: 1;
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      color: #dc2626;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 6px 0;
+      align-self: center;
+    }
+
+    .clear-btn:hover {
+      color: #b91c1c;
+    }
+
+    .report-output {
+      background: #fafbfc;
+      border-radius: 12px;
+      padding: 20px 20px;
+      min-height: 260px;
+      overflow-x: auto;
+      border-left: 4px solid #4f46e5;
+    }
+
+    .report-output .empty {
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    .report-output table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff;
+      border: 1px solid #000000;
+    }
+
+    .report-output table td {
+      padding: 8px 14px;
+      border: 1px solid #000000;
+      vertical-align: top;
+    }
+
+    .report-output table .label-cell {
+      font-weight: 700;
+      background: #ffffff;
+      width: 180px;
+      white-space: nowrap;
+      color: #111;
+    }
+
+    .report-output table .value-cell {
+      background: #ffffff;
+      color: #111;
+    }
+
+    .report-output table .value-cell img {
+      max-width: 260px;
+      max-height: 180px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .report-header {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      padding: 6px 0 10px 0;
+      letter-spacing: 0.5px;
+      color: #111;
+      border-bottom: 2px solid #000;
+      margin-bottom: 4px;
+    }
+
+    .report-header small {
+      font-weight: 400;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    .report-preview-note {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 8px;
+      text-align: right;
+    }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    .history-item {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border-left: 4px solid #4f46e5;
+      transition: transform 0.2s;
+    }
+
+    .history-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .history-item .h-id {
+      font-weight: 700;
+      color: #4f46e5;
+      font-size: 15px;
+    }
+
+    .history-item .h-title {
+      font-weight: 600;
+      font-size: 15px;
+      margin: 4px 0 6px;
+    }
+
+    .history-item .h-meta {
+      font-size: 13px;
+      color: #6b7280;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .history-item .h-meta span {
+      background: #f3f4f6;
+      padding: 2px 12px;
+      border-radius: 12px;
+    }
+
+    .history-item .h-preview-img {
+      max-width: 100px;
+      max-height: 70px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      margin-top: 6px;
+    }
+
+    .history-item .h-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .history-item .h-actions button {
+      padding: 4px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-view {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    .btn-view:hover {
+      background: #d1d5db;
+    }
+
+    .btn-copy-history {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .btn-copy-history:hover {
+      background: #a7f3d0;
+    }
+
+    .btn-delete-history {
+      background: #fecaca;
+      color: #991b1b;
+    }
+
+    .btn-delete-history:hover {
+      background: #fca5a5;
+    }
+
+    .history-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #9ca3af;
+      font-size: 16px;
+    }
+
+    .history-empty .icon {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .btn-clear-all {
+      padding: 8px 24px;
+      background: #fecaca;
+      color: #991b1b;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 14px;
+    }
+
+    .btn-clear-all:hover {
+      background: #fca5a5;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #fff;
+      border-radius: 18px;
+      padding: 30px 35px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: modalIn 0.25s ease;
+    }
+
+    @keyframes modalIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-close {
+      position: sticky;
+      top: 0;
+      float: right;
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 0 8px;
+      z-index: 10;
+    }
+
+    .modal-close:hover {
+      color: #111;
+    }
+
+    .modal-content .report-output {
+      border-left: none;
+      padding: 0;
+      background: transparent;
+    }
+
+    .modal-content .report-output table {
+      font-size: 13px;
+    }
+
+    .modal-content .report-output table td {
+      padding: 6px 12px;
+    }
+
+    .modal-content .report-output .label-cell {
+      background: #ffffff;
+    }
+
+    .custom-alert-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .custom-alert-overlay.open {
+      display: flex;
+    }
+
+    .custom-alert {
+      background: #fff;
+      border-radius: 18px;
+      padding: 30px 35px;
+      max-width: 450px;
+      width: 100%;
+      animation: modalIn 0.25s ease;
+      text-align: center;
+    }
+
+    .custom-alert .alert-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .custom-alert .alert-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 6px;
+    }
+
+    .custom-alert .alert-message {
+      font-size: 15px;
+      color: #4b5563;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .custom-alert .alert-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .custom-alert .alert-actions button {
+      padding: 10px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      min-width: 100px;
+    }
+
+    .btn-alert-confirm {
+      background: #4f46e5;
+      color: #fff;
+    }
+
+    .btn-alert-confirm:hover {
+      background: #4338ca;
+    }
+
+    .btn-alert-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .btn-alert-danger:hover {
+      background: #b91c1c;
+    }
+
+    .btn-alert-cancel {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    .btn-alert-cancel:hover {
+      background: #d1d5db;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 0; }
+      .card { padding: 20px 16px; }
+      .main-header h1 { font-size: 22px; }
+      .tabs button { font-size: 13px; padding: 10px 12px; }
+      .history-grid { grid-template-columns: 1fr; }
+      .modal-content { padding: 20px; }
+      .custom-alert { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="main-header">
+    <h1>Баг-трекер</h1>
+    <div class="badge">
+      Всего багов: <span id="totalBugsBadge">0</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="active" data-tab="tab-new">Новый репорт</button>
+    <button data-tab="tab-history">История (<span id="historyCount">0</span>)</button>
+  </div>
+
+  <div class="tab-content active" id="tab-new">
+    <div class="form-grid">
+
+      <div class="card">
+        <h2>Создать баг-репорт</h2>
+        <p class="subtitle">Заполните поля и нажмите «Сгенерировать»</p>
+
+        <div class="example-buttons">
+          <button onclick="fillExample('ui')">UI-баг</button>
+          <button onclick="fillExample('logic')">Логический</button>
+          <button onclick="fillExample('critical')">Критический</button>
+          <button onclick="clearForm()">Очистить</button>
+        </div>
+
+        <div class="form-group">
+          <label>Краткое описание <span class="required">*</span></label>
+          <input type="text" id="bugTitle" placeholder="Например: Не отображается сообщение об ошибке" autocomplete="off"/>
+        </div>
+
+        <div class="form-group">
+          <label>Шаги воспроизведения <span class="required">*</span></label>
+          <textarea id="bugSteps" placeholder="1. Открыть страницу&#10;2. Ввести некорректные данные&#10;3. Нажать кнопку" autocomplete="off"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Фактический результат <span class="required">*</span></label>
+          <textarea id="bugActual" placeholder="Что происходит на самом деле" autocomplete="off"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Ожидаемый результат <span class="required">*</span></label>
+          <textarea id="bugExpected" placeholder="Что должно происходить по ТЗ" autocomplete="off"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Серьёзность <span class="required">*</span></label>
+            <select id="bugSeverity">
+              <option value="Blocker">Blocker</option>
+              <option value="Critical" selected>Critical</option>
+              <option value="Major">Major</option>
+              <option value="Minor">Minor</option>
+              <option value="Trivial">Trivial</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Приоритет <span class="required">*</span></label>
+            <select id="bugPriority">
+              <option value="High">High</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Окружение</label>
+          <input type="text" id="bugEnv" placeholder="Chrome 120, Windows 10" value="Chrome 120, Windows 10" />
+        </div>
+
+        <div class="form-group">
+          <label>Вложения (скриншот)</label>
+
+          <div class="file-upload-wrapper">
+            <input type="file" id="bugScreenshot" accept="image/*" />
+            <div class="file-upload-btn">
+              <span class="icon"></span>
+              Выберите файл
+              <span class="hint">или вставьте из буфера (Ctrl+V)</span>
+            </div>
+          </div>
+          <span class="file-name" id="fileName">Файл не выбран</span>
+
+          <div class="paste-area" id="pasteArea">
+            <span class="paste-icon"></span>
+            <span class="paste-hint">Нажмите Ctrl+V, чтобы вставить скриншот из буфера</span>
+            <span class="paste-hint">Кликните по области правой кнопкой мыши для возможности вставки изображения из буфера</span>
+            <span class="paste-status" id="pasteStatus"></span>
+          </div>
+
+          <div class="preview-wrapper" id="imagePreview"></div>
+        </div>
+
+        <button class="btn-generate" onclick="generateReport()">Сгенерировать</button>
+
+        <div class="action-row">
+          <button class="btn-copy" onclick="copyReport()">Копировать таблицу</button>
+          <span class="copy-feedback" id="copyFeedback">Скопировано!</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Предпросмотр</h2>
+        <p class="subtitle">Готовый отчёт для вставки в Word</p>
+        <div class="report-output" id="reportOutput">
+          <span class="empty">Заполните форму — предпросмотр обновится автоматически</span>
+        </div>
+        <div class="report-preview-note">Таблица скопируется с тонкими чёрными границами</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-history">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <h2>История баг-репортов</h2>
+        <button class="btn-clear-all" onclick="confirmClearAll()">Очистить всю историю</button>
+      </div>
+      <div id="historyContainer"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="custom-alert-overlay" id="alertOverlay">
+  <div class="custom-alert">
+    <div class="alert-icon" id="alertIcon">ℹ️</div>
+    <div class="alert-title" id="alertTitle">Внимание</div>
+    <div class="alert-message" id="alertMessage">Текст сообщения</div>
+    <div class="alert-actions" id="alertActions">
+      <button class="btn-alert-confirm" onclick="closeAlert()">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  let reports = JSON.parse(localStorage.getItem('bugReports') || '[]');
+
+  function generateUniqueId() {
+    let maxNum = 0;
+    reports.forEach(r => {
+      const num = parseInt(r.id.replace('BUG-', ''));
+      if (num > maxNum) maxNum = num;
+    });
+    return 'BUG-' + String(maxNum + 1).padStart(3, '0');
+  }
+
+  let bugCounter = reports.length;
+  let screenshotData = null;
+  let screenshotName = '';
+
+  function showAlert(title, message, icon = 'ℹ️', buttons = null) {
+    return new Promise((resolve) => {
+      document.getElementById('alertIcon').textContent = icon;
+      document.getElementById('alertTitle').textContent = title;
+      document.getElementById('alertMessage').textContent = message;
+
+      const actions = document.getElementById('alertActions');
+      actions.innerHTML = '';
+
+      if (buttons) {
+        buttons.forEach((btn) => {
+          const button = document.createElement('button');
+          button.textContent = btn.label;
+          button.className = btn.className || 'btn-alert-confirm';
+          button.onclick = function() {
+            closeAlert();
+            resolve(btn.value !== undefined ? btn.value : true);
+          };
+          actions.appendChild(button);
+        });
+      } else {
+        const okBtn = document.createElement('button');
+        okBtn.textContent = 'OK';
+        okBtn.className = 'btn-alert-confirm';
+        okBtn.onclick = function() {
+          closeAlert();
+          resolve(true);
+        };
+        actions.appendChild(okBtn);
+      }
+
+      document.getElementById('alertOverlay').classList.add('open');
+    });
+  }
+
+  function closeAlert() {
+    document.getElementById('alertOverlay').classList.remove('open');
+  }
+
+  document.querySelectorAll('.tabs button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const tabId = this.dataset.tab;
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      if (tabId === 'tab-history') renderHistory();
+    });
+  });
+
+  function setScreenshot(data, name) {
+    screenshotData = data;
+    screenshotName = name || 'скриншот.png';
+    document.getElementById('fileName').textContent = name || 'скриншот.png';
+
+    const preview = document.getElementById('imagePreview');
+    if (data) {
+      preview.innerHTML = `<img src="${data}" class="screenshot-preview" alt="Скриншот" />`;
+    } else {
+      preview.innerHTML = '';
+    }
+
+    const status = document.getElementById('pasteStatus');
+    if (data) {
+      status.textContent = '✅ Вставлено!';
+      status.className = 'paste-status';
+    } else {
+      status.textContent = '';
+      status.className = 'paste-status';
+    }
+
+    updatePreview();
+  }
+
+  document.getElementById('bugScreenshot').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) {
+      setScreenshot(null, '');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      setScreenshot(event.target.result, file.name);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const pasteArea = document.getElementById('pasteArea');
+
+  pasteArea.addEventListener('paste', function(e) {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+
+    let imageItem = null;
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        imageItem = item;
+        break;
+      }
+    }
+
+    if (!imageItem) {
+      const status = document.getElementById('pasteStatus');
+      status.textContent = 'В буфере нет изображения';
+      status.className = 'paste-status error';
+      setTimeout(() => {
+        if (!screenshotData) {
+          status.textContent = '';
+          status.className = 'paste-status';
+        }
+      }, 3000);
+      return;
+    }
+
+    const file = imageItem.getAsFile();
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+      setScreenshot(event.target.result, 'из буфера.png');
+      document.getElementById('bugScreenshot').value = '';
+    };
+
+    reader.readAsDataURL(file);
+
+    pasteArea.classList.add('highlight');
+    setTimeout(() => pasteArea.classList.remove('highlight'), 500);
+  });
+
+  pasteArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.classList.add('highlight');
+  });
+
+  pasteArea.addEventListener('dragleave', function(e) {
+    this.classList.remove('highlight');
+  });
+
+  function updatePreview() {
+    const title = document.getElementById('bugTitle').value.trim();
+    const steps = document.getElementById('bugSteps').value.trim();
+    const actual = document.getElementById('bugActual').value.trim();
+    const expected = document.getElementById('bugExpected').value.trim();
+    const severity = document.getElementById('bugSeverity').value;
+    const priority = document.getElementById('bugPriority').value;
+    const env = document.getElementById('bugEnv').value.trim() || 'Не указано';
+
+    if (!title || !steps || !actual || !expected) {
+      document.getElementById('reportOutput').innerHTML =
+        '<span class="empty">Заполните все обязательные поля (отмечены *)</span>';
+      return;
+    }
+
+    const tempId = generateUniqueId();
+
+    let imgHtml = 'Нет';
+    if (screenshotData) {
+      imgHtml = `<img src="${screenshotData}" alt="${screenshotName}" style="max-width:260px;max-height:180px;border-radius:6px;border:1px solid #d1d5db;" />`;
+    }
+
+    function esc(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    const tableHtml = `
+<div class="report-header">БАГ-РЕПОРТ №${tempId}</div>
+<table>
+  <tr>
+    <td class="label-cell">ID</td>
+    <td class="value-cell"><strong>${tempId}</strong></td>
+  </tr>
+  <tr>
+    <td class="label-cell">Краткое описание</td>
+    <td class="value-cell">${esc(title)}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Шаги воспроизведения</td>
+    <td class="value-cell">${esc(steps).replace(/\n/g, '<br>')}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Фактический результат</td>
+    <td class="value-cell">${esc(actual)}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Ожидаемый результат</td>
+    <td class="value-cell">${esc(expected)}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Серьёзность (Severity)</td>
+    <td class="value-cell"><strong>${severity}</strong></td>
+  </tr>
+  <tr>
+    <td class="label-cell">Приоритет (Priority)</td>
+    <td class="value-cell"><strong>${priority}</strong></td>
+  </tr>
+  <tr>
+    <td class="label-cell">Окружение</td>
+    <td class="value-cell">${esc(env)}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Вложения</td>
+    <td class="value-cell">${imgHtml}</td>
+  </tr>
+</table>
+    `;
+
+    document.getElementById('reportOutput').innerHTML = tableHtml;
+  }
+
+  function generateReport() {
+    const title = document.getElementById('bugTitle').value.trim();
+    const steps = document.getElementById('bugSteps').value.trim();
+    const actual = document.getElementById('bugActual').value.trim();
+    const expected = document.getElementById('bugExpected').value.trim();
+    const severity = document.getElementById('bugSeverity').value;
+    const priority = document.getElementById('bugPriority').value;
+    const env = document.getElementById('bugEnv').value.trim() || 'Не указано';
+
+    if (!title || !steps || !actual || !expected) {
+      showAlert('Ошибка', 'Заполните все обязательные поля (отмечены *)', '⚠️');
+      return;
+    }
+
+    const id = generateUniqueId();
+
+    let imgHtml = 'Нет';
+    if (screenshotData) {
+      imgHtml = `<img src="${screenshotData}" alt="${screenshotName}" style="max-width:260px;max-height:180px;border-radius:6px;border:1px solid #d1d5db;" />`;
+    }
+
+    function esc(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    const tableHtml = `
+<div class="report-header">БАГ-РЕПОРТ №${id} <small>(${new Date().toLocaleDateString('ru-RU')})</small></div>
+<table>
+  <tr>
+    <td class="label-cell">ID</td>
+    <td class="value-cell"><strong>${id}</strong></td>
+  </tr>
+  <tr>
+    <td class="label-cell">Краткое описание</td>
+    <td class="value-cell">${esc(title)}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Шаги воспроизведения</td>
+    <td class="value-cell">${esc(steps).replace(/\n/g, '<br>')}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Фактический результат</td>
+    <td class="value-cell">${esc(actual)}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Ожидаемый результат</td>
+    <td class="value-cell">${esc(expected)}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Серьёзность (Severity)</td>
+    <td class="value-cell"><strong>${severity}</strong></td>
+  </tr>
+  <tr>
+    <td class="label-cell">Приоритет (Priority)</td>
+    <td class="value-cell"><strong>${priority}</strong></td>
+  </tr>
+  <tr>
+    <td class="label-cell">Окружение</td>
+    <td class="value-cell">${esc(env)}</td>
+  </tr>
+  <tr>
+    <td class="label-cell">Вложения</td>
+    <td class="value-cell">${imgHtml}</td>
+  </tr>
+</table>
+    `;
+
+    document.getElementById('reportOutput').innerHTML = tableHtml;
+
+    reports.push({
+      id: id,
+      title: title,
+      steps: steps,
+      actual: actual,
+      expected: expected,
+      severity: severity,
+      priority: priority,
+      env: env,
+      screenshot: screenshotData,
+      screenshotName: screenshotName,
+      date: new Date().toISOString()
+    });
+
+    localStorage.setItem('bugReports', JSON.stringify(reports));
+    bugCounter = reports.length;
+    updateBadges();
+
+    setScreenshot(null, '');
+
+    showAlert('Готово', 'Баг-репорт создан и сохранён!', '✅');
+  }
+
+  function updateBadges() {
+    document.getElementById('totalBugsBadge').textContent = reports.length;
+    document.getElementById('historyCount').textContent = reports.length;
+  }
+
+  function copyReport() {
+    const output = document.getElementById('reportOutput');
+    const html = output.innerHTML;
+    if (!html || html.includes('Заполните')) {
+      showAlert('Ошибка', 'Сначала заполните форму!', '⚠️');
+      return;
+    }
+
+    const styledHtml = `
+<html>
+<head><meta charset="UTF-8">
+<style>
+  body { font-family: 'Times New Roman', Tahoma, sans-serif; }
+  table { width: 100%; border-collapse: collapse; border: 1px solid #000000; }
+  td { padding: 8px 14px; border: 1px solid #000000; vertical-align: top; }
+  .label-cell { font-weight: 700; background: #ffffff; width: 180px; }
+  .value-cell { background: #ffffff; }
+  .value-cell img { max-width: 150px; max-height: 70px; border-radius: 6px; border: 1px solid #d1d5db; display: block; margin-top: 4px; }
+  .report-header { font-size: 18px; font-weight: 700; text-align: center; padding: 6px 0 10px 0; border-bottom: 2px solid #000; margin-bottom: 4px; }
+  .report-header small { font-weight: 400; font-size: 13px; color: #4b5563; }
+</style>
+</head>
+<body>${html}</body>
+</html>
+    `;
+
+    const blob = new Blob([styledHtml], { type: 'text/html' });
+    const item = new ClipboardItem({
+      'text/html': blob,
+      'text/plain': new Blob([output.textContent], { type: 'text/plain' })
+    });
+
+    navigator.clipboard.write([item]).then(() => {
+      const fb = document.getElementById('copyFeedback');
+      fb.classList.add('show');
+      setTimeout(() => fb.classList.remove('show'), 2500);
+    }).catch(() => {
+      const range = document.createRange();
+      range.selectNode(output);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand('copy');
+      window.getSelection().removeAllRanges();
+      const fb = document.getElementById('copyFeedback');
+      fb.classList.add('show');
+      setTimeout(() => fb.classList.remove('show'), 2500);
+    });
+  }
+
+  function renderHistory() {
+    const container = document.getElementById('historyContainer');
+
+    if (reports.length === 0) {
+      container.innerHTML = `
+        <div class="history-empty">
+          <div class="icon"></div>
+          История пуста. Создайте первый баг-репорт!
+        </div>
+      `;
+      return;
+    }
+
+    const sorted = [...reports].reverse();
+
+    container.innerHTML = `<div class="history-grid">${sorted.map((r, index) => {
+      const realIndex = reports.length - 1 - index;
+      const date = new Date(r.date).toLocaleString('ru-RU');
+      let imgHtml = '';
+      if (r.screenshot) {
+        imgHtml = `<img src="${r.screenshot}" class="h-preview-img" alt="скриншот" />`;
+      }
+      return `
+        <div class="history-item">
+          <div class="h-id">${r.id}</div>
+          <div class="h-title">${escapeHtml(r.title)}</div>
+          <div class="h-meta">
+            <span>${r.severity}</span>
+            <span>${r.priority}</span>
+            <span>${date}</span>
+          </div>
+          ${imgHtml}
+          <div class="h-actions">
+            <button class="btn-view" onclick="viewReport(${realIndex})">Просмотр</button>
+            <button class="btn-copy-history" onclick="copyHistoryReport(${realIndex})">Копировать таблицу</button>
+            <button class="btn-delete-history" onclick="confirmDeleteReport(${realIndex})">Удалить</button>
+          </div>
+        </div>
+      `;
+    }).join('')}</div>`;
+
+    updateBadges();
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function copyHistoryReport(index) {
+    const r = reports[index];
+    if (!r) return;
+
+    let imgHtml = 'Нет';
+    if (r.screenshot) {
+      imgHtml = `<img src="${r.screenshot}" alt="${r.screenshotName || 'скриншот'}" style="max-width:260px;max-height:180px;border-radius:6px;border:1px solid #d1d5db;" />`;
+    }
+
+    const html = `
+      <div class="report-header">БАГ-РЕПОРТ №${r.id} <small>(${new Date(r.date).toLocaleDateString('ru-RU')})</small></div>
+      <table>
+        <tr><td class="label-cell">ID</td><td class="value-cell"><strong>${r.id}</strong></td></tr>
+        <tr><td class="label-cell">Краткое описание</td><td class="value-cell">${escapeHtml(r.title)}</td></tr>
+        <tr><td class="label-cell">Шаги воспроизведения</td><td class="value-cell">${escapeHtml(r.steps).replace(/\n/g, '<br>')}</td></tr>
+        <tr><td class="label-cell">Фактический результат</td><td class="value-cell">${escapeHtml(r.actual)}</td></tr>
+        <tr><td class="label-cell">Ожидаемый результат</td><td class="value-cell">${escapeHtml(r.expected)}</td></tr>
+        <tr><td class="label-cell">Серьёзность (Severity)</td><td class="value-cell"><strong>${r.severity}</strong></td></tr>
+        <tr><td class="label-cell">Приоритет (Priority)</td><td class="value-cell"><strong>${r.priority}</strong></td></tr>
+        <tr><td class="label-cell">Окружение</td><td class="value-cell">${escapeHtml(r.env)}</td></tr>
+        <tr><td class="label-cell">Вложения</td><td class="value-cell">${imgHtml}</td></tr>
+      </table>
+    `;
+
+    const styledHtml = `
+      <html>
+      <head><meta charset="UTF-8">
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; }
+        table { width: 100%; border-collapse: collapse; border: 1px solid #000000; }
+        td { padding: 8px 14px; border: 1px solid #000000; vertical-align: top; }
+        .label-cell { font-weight: 700; background: #ffffff; width: 180px; }
+        .value-cell { background: #ffffff; }
+        .value-cell img { max-width: 260px; max-height: 180px; border-radius: 6px; border: 1px solid #d1d5db; display: block; margin-top: 4px; }
+        .report-header { font-size: 18px; font-weight: 700; text-align: center; padding: 6px 0 10px 0; border-bottom: 2px solid #000; margin-bottom: 4px; }
+        .report-header small { font-weight: 400; font-size: 13px; color: #4b5563; }
+      </style>
+      </head>
+      <body>${html}</body>
+      </html>
+    `;
+
+    const blob = new Blob([styledHtml], { type: 'text/html' });
+    const item = new ClipboardItem({
+      'text/html': blob,
+      'text/plain': new Blob([html], { type: 'text/plain' })
+    });
+
+    navigator.clipboard.write([item]).then(() => {
+      showAlert('Готово', 'Таблица скопирована! Можно вставить в Word.', '✅');
+    }).catch(() => {
+      const temp = document.createElement('div');
+      temp.innerHTML = styledHtml;
+      document.body.appendChild(temp);
+      const range = document.createRange();
+      range.selectNode(temp);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand('copy');
+      window.getSelection().removeAllRanges();
+      document.body.removeChild(temp);
+      showAlert('Готово', 'Таблица скопирована! Можно вставить в Word.', '✅');
+    });
+  }
+
+  function viewReport(index) {
+    const r = reports[index];
+    if (!r) return;
+
+    let imgHtml = 'Нет';
+    if (r.screenshot) {
+      imgHtml = `<img src="${r.screenshot}" alt="${r.screenshotName || 'скриншот'}" style="max-width:300px;max-height:200px;border-radius:6px;border:1px solid #d1d5db;" />`;
+    }
+
+    const html = `
+      <div class="report-header">БАГ-РЕПОРТ №${r.id} <small>(${new Date(r.date).toLocaleDateString('ru-RU')})</small></div>
+      <table>
+        <tr><td class="label-cell">ID</td><td class="value-cell"><strong>${r.id}</strong></td></tr>
+        <tr><td class="label-cell">Краткое описание</td><td class="value-cell">${escapeHtml(r.title)}</td></tr>
+        <tr><td class="label-cell">Шаги воспроизведения</td><td class="value-cell">${escapeHtml(r.steps).replace(/\n/g, '<br>')}</td></tr>
+        <tr><td class="label-cell">Фактический результат</td><td class="value-cell">${escapeHtml(r.actual)}</td></tr>
+        <tr><td class="label-cell">Ожидаемый результат</td><td class="value-cell">${escapeHtml(r.expected)}</td></tr>
+        <tr><td class="label-cell">Серьёзность (Severity)</td><td class="value-cell"><strong>${r.severity}</strong></td></tr>
+        <tr><td class="label-cell">Приоритет (Priority)</td><td class="value-cell"><strong>${r.priority}</strong></td></tr>
+        <tr><td class="label-cell">Окружение</td><td class="value-cell">${escapeHtml(r.env)}</td></tr>
+        <tr><td class="label-cell">Вложения</td><td class="value-cell">${imgHtml}</td></tr>
+      </table>
+    `;
+
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+
+  document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  async function confirmDeleteReport(index) {
+    const result = await showAlert(
+      'Подтверждение',
+      'Удалить этот баг-репорт?',
+      '🗑️',
+      [
+        { label: 'Удалить', className: 'btn-alert-danger', value: true },
+        { label: 'Отмена', className: 'btn-alert-cancel', value: false }
+      ]
+    );
+
+    if (result) {
+      deleteReport(index);
+    }
+  }
+
+  function deleteReport(index) {
+    reports.splice(index, 1);
+    localStorage.setItem('bugReports', JSON.stringify(reports));
+    bugCounter = reports.length;
+
+    renderHistory();
+    updateBadges();
+
+    document.getElementById('reportOutput').innerHTML =
+      '<span class="empty">Заполните форму — предпросмотр обновится автоматически</span>';
+
+    showAlert('Готово', 'Баг-репорт удалён.', '✅');
+  }
+
+  async function confirmClearAll() {
+    const result = await showAlert(
+      'Подтверждение',
+      'Удалить ВСЕ баг-репорты из истории? Это действие нельзя отменить.',
+      '⚠️',
+      [
+        { label: 'Удалить всё', className: 'btn-alert-danger', value: true },
+        { label: 'Отмена', className: 'btn-alert-cancel', value: false }
+      ]
+    );
+
+    if (result) {
+      clearAllHistory();
+    }
+  }
+
+  function clearAllHistory() {
+    reports = [];
+    localStorage.setItem('bugReports', JSON.stringify(reports));
+    bugCounter = 0;
+
+    renderHistory();
+    updateBadges();
+
+    document.getElementById('reportOutput').innerHTML =
+      '<span class="empty">Заполните форму — предпросмотр обновится автоматически</span>';
+
+    showAlert('Готово', 'Вся история очищена. Счётчик сброшен.', '✅');
+  }
+
+  function fillExample(type) {
+    const examples = {
+      ui: {
+        title: 'Кнопка "Войти" не меняет цвет при наведении',
+        steps: '1. Открыть страницу авторизации\n2. Навести курсор на кнопку "Войти"\n3. Нажать на кнопку',
+        actual: 'Кнопка остается серой, визуальной обратной связи нет',
+        expected: 'Кнопка должна менять цвет на синий при наведении и на темно-синий при нажатии',
+        severity: 'Minor',
+        priority: 'Low',
+        env: 'Chrome 120, Windows 10'
+      },
+      logic: {
+        title: 'При вводе отрицательной суммы калькулятор возвращает 0',
+        steps: '1. Открыть калькулятор\n2. Ввести -100 в поле "Сумма"\n3. Нажать "Рассчитать"',
+        actual: 'Калькулятор возвращает 0.00',
+        expected: 'Должно появляться сообщение: "Сумма должна быть больше 0"',
+        severity: 'Major',
+        priority: 'High',
+        env: 'Chrome 120, Windows 10'
+      },
+      critical: {
+        title: 'При оформлении заказа с пустой корзиной происходит ошибка 500',
+        steps: '1. Открыть корзину\n2. Убедиться, что корзина пуста\n3. Нажать "Оформить заказ"',
+        actual: 'Появляется страница с ошибкой 500 Internal Server Error',
+        expected: 'Должно появляться сообщение: "Корзина пуста. Добавьте товары"',
+        severity: 'Critical',
+        priority: 'High',
+        env: 'Chrome 120, Windows 10'
+      }
+    };
+
+    const ex = examples[type];
+    if (!ex) return;
+
+    document.getElementById('bugTitle').value = ex.title;
+    document.getElementById('bugSteps').value = ex.steps;
+    document.getElementById('bugActual').value = ex.actual;
+    document.getElementById('bugExpected').value = ex.expected;
+    document.getElementById('bugSeverity').value = ex.severity;
+    document.getElementById('bugPriority').value = ex.priority;
+    document.getElementById('bugEnv').value = ex.env;
+
+    setScreenshot(null, '');
+    updatePreview();
+  }
+
+  function clearForm() {
+    document.getElementById('bugTitle').value = '';
+    document.getElementById('bugSteps').value = '';
+    document.getElementById('bugActual').value = '';
+    document.getElementById('bugExpected').value = '';
+    document.getElementById('bugEnv').value = 'Chrome 120, Windows 10';
+    document.getElementById('bugScreenshot').value = '';
+    setScreenshot(null, '');
+    document.getElementById('reportOutput').innerHTML =
+      '<span class="empty">Заполните форму — предпросмотр обновится автоматически</span>';
+  }
+
+  document.querySelectorAll('#bugTitle, #bugSteps, #bugActual, #bugExpected, #bugSeverity, #bugPriority, #bugEnv')
+    .forEach(el => {
+      el.addEventListener('input', updatePreview);
+      el.addEventListener('change', updatePreview);
+    });
+
+  window.onload = function() {
+    reports = JSON.parse(localStorage.getItem('bugReports') || '[]');
+    bugCounter = reports.length;
+
+    updateBadges();
+    renderHistory();
+
+    document.getElementById('reportOutput').innerHTML =
+      '<span class="empty">Заполните форму — предпросмотр обновится автоматически</span>';
+  };
+</script>
+
+</body>
+</html>
